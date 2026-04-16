@@ -248,10 +248,71 @@ button:active{transform:translateY(2px);box-shadow:none;}
   filter: grayscale(100%);
 }
 
+  /* ── INSTALL SCREEN ── */
+  #install-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    gap: 24px;
+    padding: 24px;
+  }
+
+  #install-box {
+    background: rgba(28, 14, 24, 0.88);
+    border: 3px solid #e7a2f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    gap: 20px;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  #install-ghost {
+    width: clamp(100px, 40vw, 180px);
+    height: clamp(100px, 40vw, 180px);
+    object-fit: contain;
+    image-rendering: pixelated;
+  }
+
+  #btn-enter {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(10px, 3.5vw, 14px);
+    color: #9de5f3;
+    background: rgba(78, 48, 182, 0.85);
+    border: 3px solid #9de5f3;
+    padding: 12px 28px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #8661a9;
+    width: 100%;
+    letter-spacing: 1px;
+  }
+
+  #btn-enter:active {
+    transform: scale(0.95);
+    box-shadow: none;
+  }
+
 </style>
 </head>
 <body>
 <div id="app-container">
+  <!-- INSTALL SCREEN -->
+<div id="install-screen" style="display: none;">
+  <div id="install-box">
+    <img id="install-ghost" src="assets/Images/npc/ghost1.png" alt="ghost">
+    <button id="btn-enter" onclick="enterGame()">Enter / Entrar</button>
+  </div>
+</div>
 
 <div class="box" id="box-music" style="display:none;">
   <iframe style="border:0;width:100%;height:120px;" src="https://bandcamp.com/EmbeddedPlayer/album=2630275536/size=large/bgcol=333333/linkcol=fe7eaf/tracklist=false/artwork=small/transparent=true/" seamless><a href="https://roboomusic.bandcamp.com/album/reborn-as-a-tree">Reborn As A Tree by ROBOO</a></iframe>
@@ -1108,6 +1169,24 @@ const fills=['#a8e0e6','#a8e0e6','#a8e0e6','#a8e0e6','#089ad8','#089ad8','#8661a
   draw();
   window.addEventListener('resize',draw);
 })();
+
+// ── INSTALL SCREEN ──
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = deferredPrompt || e;
+});
+
+function enterGame() {
+  playBtn();
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt = null;
+  }
+  document.getElementById('install-screen').style.display = 'none';
+  document.getElementById('info-overlay').style.display = 'flex';
+  document.getElementById('info-overlay').scrollTop = 0;
+}
 </script>
 </body>
 </html>
