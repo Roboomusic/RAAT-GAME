@@ -13,7 +13,10 @@
         if (isLocal) {
           navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.unregister()));
         } else {
-          navigator.serviceWorker.register('sw.js');
+          // Registramos el SW sólo si el archivo existe (evita error 404 en GitHub Pages)
+          fetch('sw.js', {method:'HEAD'}).then(r => {
+            if (r.ok) navigator.serviceWorker.register('sw.js').catch(()=>{});
+          }).catch(()=>{});
         }
       }
     </script>
@@ -1141,18 +1144,20 @@ modelElement.addEventListener('click', function(){
 
 init(0);
 updateUI();
-setTimeout(()=>{
+// Esperamos a que el DOM esté pintado antes de hacer la primera resize/render
+// para evitar las cajas vacías en GitHub Pages u otros hosts lentos.
+function showInitialScreen() {
+  resize();
   updateUI();
-  document.getElementById('info-overlay').scrollTop = 0;
-}, 200);
-setTimeout(()=>{
   document.getElementById('box-music').style.display='none';
   document.getElementById('box-model').style.display='none';
   document.getElementById('box-buttons').style.display='none';
   document.getElementById('box-grid').style.display='none';
   document.getElementById('info-overlay').style.display='flex';
   document.getElementById('info-overlay').scrollTop=0;
-}, 300);
+}
+// Usamos requestAnimationFrame doble para asegurar que el layout ya se calculó
+requestAnimationFrame(() => requestAnimationFrame(showInitialScreen));
 
 </script>
 
@@ -1207,19 +1212,21 @@ const fills=['#a8e0e6','#a8e0e6','#a8e0e6','#a8e0e6','#089ad8','#089ad8','#8661a
 })();
 
 // ── INSTALL SCREEN ──
+// Capturamos el prompt de instalación pero NO bloqueamos el juego con él.
+// La pantalla de install sólo se usa si el juego se abre como PWA standalone
+// y queremos ofrecer instalación; en cualquier otro contexto se entra directo.
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // FIX: mostrar la pantalla de instalación y ocultar el info-overlay
-  document.getElementById('install-screen').style.display = 'flex';
-  document.getElementById('info-overlay').style.display = 'none';
+  // No mostramos la install-screen automáticamente para no bloquear el juego.
 });
 
 function enterGame() {
   playBtn();
+  // Ofrecemos instalación si está disponible, pero no bloqueamos si falla o se cancela.
   if (deferredPrompt) {
-    deferredPrompt.prompt();
+    deferredPrompt.prompt().catch(() => {});
     deferredPrompt = null;
   }
   document.getElementById('install-screen').style.display = 'none';
