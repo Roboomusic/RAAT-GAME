@@ -71,6 +71,9 @@ body{
 /* BOX 3 — tiles */
 #box-grid{width:100%;background:rgba(78,48,182,0.7);}
 #grid{display:grid;gap:3px;grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);}
+
+/* Ocultar cajas del juego por defecto — JS las muestra cuando toca */
+#box-music,#box-model,#box-buttons,#box-grid{display:none;}
 .cell{display:flex;align-items:center;justify-content:center;background:#9de5f3;border:2px dashed #8661a9;}
 .tile{width:100%;height:100%;background:#9de5f3;border:2px solid #8661a9;cursor:pointer;box-shadow:4px 4px 12px rgba(157,229,243,0.9);}
 .tile img{width:100%;height:100%;object-fit:contain;display:block;}
@@ -921,7 +924,7 @@ function showWin(){
 function next(){
   document.getElementById('win').classList.remove('on');
   // Mostrar las cajas del juego de nuevo
-  ['box-music','box-model','box-buttons','box-grid'].forEach(id=>document.getElementById(id).style.display='');
+  ['box-music','box-model','box-buttons','box-grid'].forEach(id=>document.getElementById(id).style.display='flex');
   if(lvlIdx<7){lvlIdx++;init(lvlIdx);}
   else{init(0);lvlIdx=0;} // infinite mode: loop back
   playStartChime();
@@ -929,7 +932,7 @@ function next(){
 function reset(){
   document.getElementById('win').classList.remove('on');
   // Mostrar las cajas del juego de nuevo
-  ['box-music','box-model','box-buttons','box-grid'].forEach(id=>document.getElementById(id).style.display='');
+  ['box-music','box-model','box-buttons','box-grid'].forEach(id=>document.getElementById(id).style.display='flex');
   // Generar nuevo modelo aleatorio y resetear
   generateNewTarget();
   moves=0;
@@ -970,10 +973,10 @@ let firstClose=true;
 function closeInfo(){
   playBtn();
   document.getElementById('info-overlay').style.display='none';
-  document.getElementById('box-music').style.display='';
-  document.getElementById('box-model').style.display='';
+  document.getElementById('box-music').style.display='flex';
+  document.getElementById('box-model').style.display='flex';
   document.getElementById('box-buttons').style.display='flex';
-  document.getElementById('box-grid').style.display='';
+  document.getElementById('box-grid').style.display='flex';
   if(firstClose){ firstClose=false; showSeed(); }
 }
 // ── AUDIO ──
@@ -1144,19 +1147,12 @@ modelElement.addEventListener('click', function(){
 
 init(0);
 updateUI();
-// Esperamos a que el DOM esté pintado antes de hacer la primera resize/render
-// para evitar las cajas vacías en GitHub Pages u otros hosts lentos.
+// Mostramos el info-overlay una vez el layout esté calculado
 function showInitialScreen() {
   resize();
-  updateUI();
-  document.getElementById('box-music').style.display='none';
-  document.getElementById('box-model').style.display='none';
-  document.getElementById('box-buttons').style.display='none';
-  document.getElementById('box-grid').style.display='none';
   document.getElementById('info-overlay').style.display='flex';
   document.getElementById('info-overlay').scrollTop=0;
 }
-// Usamos requestAnimationFrame doble para asegurar que el layout ya se calculó
 requestAnimationFrame(() => requestAnimationFrame(showInitialScreen));
 
 </script>
@@ -1212,26 +1208,32 @@ const fills=['#a8e0e6','#a8e0e6','#a8e0e6','#a8e0e6','#089ad8','#089ad8','#8661a
 })();
 
 // ── INSTALL SCREEN ──
-// Capturamos el prompt de instalación pero NO bloqueamos el juego con él.
-// La pantalla de install sólo se usa si el juego se abre como PWA standalone
-// y queremos ofrecer instalación; en cualquier otro contexto se entra directo.
 let deferredPrompt = null;
+
+// El evento beforeinstallprompt llega de forma asíncrona (puede tardar segundos).
+// Sólo mostramos la pantalla de instalación si el usuario todavía no ha entrado al juego.
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // No mostramos la install-screen automáticamente para no bloquear el juego.
+  const infoVisible = document.getElementById('info-overlay').style.display !== 'none';
+  if (infoVisible) {
+    document.getElementById('install-screen').style.display = 'flex';
+    document.getElementById('info-overlay').style.display = 'none';
+  }
 });
 
 function enterGame() {
   playBtn();
-  // Ofrecemos instalación si está disponible, pero no bloqueamos si falla o se cancela.
-  if (deferredPrompt) {
-    deferredPrompt.prompt().catch(() => {});
-    deferredPrompt = null;
-  }
+  // Entramos al juego SIEMPRE, independientemente de si hay prompt de instalación
   document.getElementById('install-screen').style.display = 'none';
   document.getElementById('info-overlay').style.display = 'flex';
   document.getElementById('info-overlay').scrollTop = 0;
+  // Disparamos la instalación PWA si está disponible (no bloquea el juego)
+  if (deferredPrompt) {
+    const p = deferredPrompt;
+    deferredPrompt = null;
+    p.prompt().catch(() => {});
+  }
 }
 </script>
 </body>
