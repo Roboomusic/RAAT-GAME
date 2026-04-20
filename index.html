@@ -54,9 +54,9 @@ body{
 #target-grid{display:grid;gap:3px;flex-shrink:0;}
 .tc{display:flex;align-items:center;justify-content:center;background:#a8e0e6;border:1px solid #8661a9;}
 .tc.et{background:#9de5f3;border:1px dashed #8661a9;}
-#model-left-marker,#model-right-marker{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex-shrink:0;min-width:clamp(44px,10vw,60px);width:clamp(44px,10vw,60px);background:rgba(134,97,169,0.4);border:2px solid #8661a9;padding:6px 3px;border-radius:2px;}
-.marker-label{font-family:'Press Start 2P',monospace;font-size:clamp(5px,1.6vw,7px);color:#a8e0e6;text-align:center;white-space:nowrap;font-weight:600;letter-spacing:0.5px;display:none;}
-.marker-value{font-family:'Press Start 2P',monospace;font-size:clamp(11px,3.5vw,15px);color:#ffffff;text-align:center;font-weight:700;text-shadow:0 0 8px rgba(78,48,182,0.5);min-width:100%;}
+#model-left-marker,#model-right-marker{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex-shrink:0;width:clamp(40px,8vw,52px);min-width:0;max-width:52px;background:rgba(134,97,169,0.4);border:2px solid #8661a9;padding:6px 3px;border-radius:2px;overflow:hidden;}
+.marker-label{font-family:'Press Start 2P',monospace;font-size:clamp(5px,1.2vw,7px);color:#a8e0e6;text-align:center;white-space:nowrap;font-weight:600;letter-spacing:0.5px;display:none;}
+.marker-value{font-family:'Press Start 2P',monospace;font-size:clamp(11px,2.8vw,14px);color:#ffffff;text-align:center;font-weight:700;text-shadow:0 0 8px rgba(78,48,182,0.5);width:100%;overflow:hidden;}
 
 /* BOX 3 — buttons */
 #box-buttons{width:100%;display:flex;flex-direction:row;gap:8px;padding:6px;align-items:center;justify-content:center;flex-shrink:0;background:rgba(28,14,24,.75);}
@@ -190,24 +190,14 @@ button:active{transform:translateY(2px);box-shadow:none;}
 /* FIX: div imagen ocupa el espacio disponible sin desbordar */
 #pixel-seed-container .npc-img-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;}
 .seed{
-  /* FIX: fill the available flex space, not a fixed clamp */
   width:100%; height:100%;
   max-width:min(40vw, 100%);
   max-height:100%;
-  transform:translateZ(0);-webkit-font-smoothing:antialiased;
-  background-size:contain;
-  background-repeat:no-repeat;
-  background-position:center;
-  animation:seed-blink 1.5s step-start infinite;
-  background-image:url('assets/Images/npc/seed1.png');
+  object-fit:contain;
+  image-rendering:pixelated;
+  display:block;
 }
 .seed-text{flex-shrink:0;display:block;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.8vw,10px);color:#fff;text-align:center;letter-spacing:0.5px;padding:0 8px 8px;line-height:1.3;white-space:nowrap;}
-@keyframes seed-blink { 
-  0% { background-image:url('assets/Images/npc/seed1.png'); } 
-  33% { background-image:url('assets/Images/npc/seed2.png'); } 
-  66% { background-image:url('assets/Images/npc/seed3.png'); } 
-  100% { background-image:url('assets/Images/npc/seed1.png'); } 
-}
 @keyframes blink{0%,90%{transform:scaleY(1);}95%{transform:scaleY(0.1);}}
 @keyframes wag{0%{transform:translateY(0);}100%{transform:translateY(calc(var(--pixel-size,4px)*-1)) translateX(calc(var(--pixel-size,4px)*1));}}
 
@@ -220,21 +210,12 @@ button:active{transform:translateY(2px);box-shadow:none;}
 /* FIX: div imagen ocupa espacio flex sin desbordar */
 #ghost-container .npc-img-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;}
 .pixel-ghost {
-  /* FIX: fill available space with contain, no clamp fijo */
   width:100%; height:100%;
   max-width:min(40vw, 100%);
   max-height:100%;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  animation: ghost-blink 1.5s step-start infinite;
-  background-image: url('assets/Images/npc/ghost1.png');
-}
-@keyframes ghost-blink {
-  0%   { background-image: url('assets/Images/npc/ghost1.png'); }
-  33%  { background-image: url('assets/Images/npc/ghost2.png'); }
-  66%  { background-image: url('assets/Images/npc/ghost3.png'); }
-  100% { background-image: url('assets/Images/npc/ghost1.png'); }
+  object-fit:contain;
+  image-rendering:pixelated;
+  display:block;
 }
 
 #win{display:none;position:fixed;inset:0;background:rgba(28,14,24,.85);flex-direction:column;align-items:center;justify-content:center;gap:0;z-index:99;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px;}
@@ -354,13 +335,13 @@ button:active{transform:translateY(2px);box-shadow:none;}
   </div>
   <div id="ghost-container" style="display:none!important;position:absolute;top:0;right:0;bottom:0;left:0;flex-direction:column;align-items:center;background:rgba(186,103,166,0.60);z-index:100;">
     <div class="npc-img-wrap">
-      <div class="pixel-ghost"></div>
+      <img id="npc-ghost-img" class="pixel-ghost" src="assets/Images/npc/ghost1.png" alt="">
     </div>
     <div class="cat-text" style="flex-shrink:0;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.8vw,10px);color:#fff;text-align:center;padding:0 8px 10px;line-height:1.4;white-space:nowrap;"></div>
   </div>
   <div id="pixel-seed-container" style="display:none!important;position:absolute;top:0;right:0;bottom:0;left:0;flex-direction:column;align-items:center;background:rgba(78,48,182,0.60);z-index:100;">
     <div class="npc-img-wrap">
-      <div class="seed"></div>
+      <img id="npc-seed-img" class="seed" src="assets/Images/npc/seed1.png" alt="">
     </div>
     <div class="seed-text"></div>
   </div>
@@ -548,7 +529,9 @@ function tPx(){
   // model box gets remaining height after music(120) + buttons(~52) + grid + padding/gaps
   const available = window.innerHeight - MUSIC_H() - GRID_SZ() - 52 - 8*2 - 6*4;
   const fromH = Math.floor((available - 3*(SZ-1)) / SZ);
-  const fromW = Math.floor((bW() * 0.55 - 3*(SZ-1)) / SZ);
+  const markerW = Math.min(52, Math.max(40, bW() * 0.08)); // mirrors CSS clamp
+  const gridZone = bW() - markerW * 2 - 24 - 12; // padding + gaps
+  const fromW = Math.floor((gridZone - 3*(SZ-1)) / SZ);
   return Math.max(18, Math.min(fromH, fromW));
 }
 
@@ -768,6 +751,7 @@ function showSeed(msg){
   targetGrid.style.display='none';
   setMarkersVisible(false);
   catShown=true;
+  startNpcAnim('seed', 3);
   playCatSound();
   setTimeout(()=>{ if(catShown) hideSeed(); },6000);
 }
@@ -779,7 +763,7 @@ function hideSeed(){
   targetGrid.style.display='grid';
   setMarkersVisible(true);
   catShown=false;
-}
+  stopNpcAnim('seed');
 
 function showGhost(){
   const ghostContainer=document.getElementById('ghost-container');
@@ -789,6 +773,7 @@ function showGhost(){
   targetGrid.style.display='none';
   setMarkersVisible(false);
   catShown=true;
+  startNpcAnim('ghost', 3);
   playCatSound();
   setTimeout(()=>{ if(catShown) hideGhost(); },6000);
 }
@@ -800,6 +785,33 @@ function hideGhost(){
   targetGrid.style.display='grid';
   setMarkersVisible(true);
   catShown=false;
+  stopNpcAnim('ghost');
+}
+
+// ── NPC JS ANIMATION (swap <img> src, works on all mobile browsers) ──
+const NPC_FRAMES = {
+  ghost: ['assets/Images/npc/ghost1.png','assets/Images/npc/ghost2.png','assets/Images/npc/ghost3.png'],
+  seed:  ['assets/Images/npc/seed1.png', 'assets/Images/npc/seed2.png', 'assets/Images/npc/seed3.png'],
+};
+const _npcTimers = {};
+const _npcIdxs   = {};
+
+function startNpcAnim(name, fps){
+  stopNpcAnim(name);
+  const frames = NPC_FRAMES[name];
+  const img = document.getElementById('npc-'+name+'-img');
+  if(!img) return;
+  _npcIdxs[name] = 0;
+  _npcTimers[name] = setInterval(()=>{
+    _npcIdxs[name] = (_npcIdxs[name] + 1) % frames.length;
+    img.src = frames[_npcIdxs[name]];
+  }, Math.round(1000 / (fps||3)));
+}
+
+function stopNpcAnim(name){
+  if(_npcTimers[name]){ clearInterval(_npcTimers[name]); delete _npcTimers[name]; }
+  const img = document.getElementById('npc-'+name+'-img');
+  if(img) img.src = NPC_FRAMES[name][0];
 }
 
 function shuffle(s){
