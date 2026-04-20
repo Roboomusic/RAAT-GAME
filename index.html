@@ -13,7 +13,7 @@
         if (isLocal) {
           navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.unregister()));
         } else {
-          fetch('sw.js', {method:'HEAD'}).then(r=>{ if(r.ok) navigator.serviceWorker.register('sw.js').catch(()=>{}); }).catch(()=>{});
+          navigator.serviceWorker.register('sw.js');
         }
       }
     </script>
@@ -54,9 +54,9 @@ body{
 #target-grid{display:grid;gap:3px;flex-shrink:0;}
 .tc{display:flex;align-items:center;justify-content:center;background:#a8e0e6;border:1px solid #8661a9;}
 .tc.et{background:#9de5f3;border:1px dashed #8661a9;}
-#model-left-marker,#model-right-marker{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex-shrink:0;width:clamp(40px,8vw,52px);min-width:0;max-width:52px;background:rgba(134,97,169,0.4);border:2px solid #8661a9;padding:6px 3px;border-radius:2px;overflow:hidden;}
-.marker-label{font-family:'Press Start 2P',monospace;font-size:clamp(5px,1.2vw,7px);color:#a8e0e6;text-align:center;white-space:nowrap;font-weight:600;letter-spacing:0.5px;display:none;}
-.marker-value{font-family:'Press Start 2P',monospace;font-size:clamp(11px,2.8vw,14px);color:#ffffff;text-align:center;font-weight:700;text-shadow:0 0 8px rgba(78,48,182,0.5);width:100%;overflow:hidden;}
+#model-left-marker,#model-right-marker{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex-shrink:0;min-width:clamp(44px,10vw,60px);width:clamp(44px,10vw,60px);background:rgba(134,97,169,0.4);border:2px solid #8661a9;padding:6px 3px;border-radius:2px;}
+.marker-label{font-family:'Press Start 2P',monospace;font-size:clamp(5px,1.6vw,7px);color:#a8e0e6;text-align:center;white-space:nowrap;font-weight:600;letter-spacing:0.5px;display:none;}
+.marker-value{font-family:'Press Start 2P',monospace;font-size:clamp(11px,3.5vw,15px);color:#ffffff;text-align:center;font-weight:700;text-shadow:0 0 8px rgba(78,48,182,0.5);min-width:100%;}
 
 /* BOX 3 — buttons */
 #box-buttons{width:100%;display:flex;flex-direction:row;gap:8px;padding:6px;align-items:center;justify-content:center;flex-shrink:0;background:rgba(28,14,24,.75);}
@@ -68,8 +68,6 @@ body{
 /* BOX 3 — tiles */
 #box-grid{width:100%;background:rgba(78,48,182,0.7);}
 #grid{display:grid;gap:3px;grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);}
-/* Cajas ocultas por defecto para evitar flash antes de la pantalla de entrada */
-#box-music,#box-model,#box-buttons,#box-grid{display:none;}
 .cell{display:flex;align-items:center;justify-content:center;background:#9de5f3;border:2px dashed #8661a9;}
 .tile{width:100%;height:100%;background:#9de5f3;border:2px solid #8661a9;cursor:pointer;box-shadow:4px 4px 12px rgba(157,229,243,0.9);}
 .tile img{width:100%;height:100%;object-fit:contain;display:block;}
@@ -192,14 +190,24 @@ button:active{transform:translateY(2px);box-shadow:none;}
 /* FIX: div imagen ocupa el espacio disponible sin desbordar */
 #pixel-seed-container .npc-img-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;}
 .seed{
+  /* FIX: fill the available flex space, not a fixed clamp */
   width:100%; height:100%;
   max-width:min(40vw, 100%);
   max-height:100%;
-  object-fit:contain;
-  image-rendering:pixelated;
-  display:block;
+  transform:translateZ(0);-webkit-font-smoothing:antialiased;
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  animation:seed-blink 1.5s step-start infinite;
+  background-image:url('assets/Images/npc/seed1.png');
 }
 .seed-text{flex-shrink:0;display:block;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.8vw,10px);color:#fff;text-align:center;letter-spacing:0.5px;padding:0 8px 8px;line-height:1.3;white-space:nowrap;}
+@keyframes seed-blink { 
+  0% { background-image:url('assets/Images/npc/seed1.png'); } 
+  33% { background-image:url('assets/Images/npc/seed2.png'); } 
+  66% { background-image:url('assets/Images/npc/seed3.png'); } 
+  100% { background-image:url('assets/Images/npc/seed1.png'); } 
+}
 @keyframes blink{0%,90%{transform:scaleY(1);}95%{transform:scaleY(0.1);}}
 @keyframes wag{0%{transform:translateY(0);}100%{transform:translateY(calc(var(--pixel-size,4px)*-1)) translateX(calc(var(--pixel-size,4px)*1));}}
 
@@ -212,12 +220,21 @@ button:active{transform:translateY(2px);box-shadow:none;}
 /* FIX: div imagen ocupa espacio flex sin desbordar */
 #ghost-container .npc-img-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;}
 .pixel-ghost {
+  /* FIX: fill available space with contain, no clamp fijo */
   width:100%; height:100%;
   max-width:min(40vw, 100%);
   max-height:100%;
-  object-fit:contain;
-  image-rendering:pixelated;
-  display:block;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: ghost-blink 1.5s step-start infinite;
+  background-image: url('assets/Images/npc/ghost1.png');
+}
+@keyframes ghost-blink {
+  0%   { background-image: url('assets/Images/npc/ghost1.png'); }
+  33%  { background-image: url('assets/Images/npc/ghost2.png'); }
+  66%  { background-image: url('assets/Images/npc/ghost3.png'); }
+  100% { background-image: url('assets/Images/npc/ghost1.png'); }
 }
 
 #win{display:none;position:fixed;inset:0;background:rgba(28,14,24,.85);flex-direction:column;align-items:center;justify-content:center;gap:0;z-index:99;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px;}
@@ -337,13 +354,13 @@ button:active{transform:translateY(2px);box-shadow:none;}
   </div>
   <div id="ghost-container" style="display:none!important;position:absolute;top:0;right:0;bottom:0;left:0;flex-direction:column;align-items:center;background:rgba(186,103,166,0.60);z-index:100;">
     <div class="npc-img-wrap">
-      <img id="npc-ghost-img" class="pixel-ghost" src="assets/Images/npc/ghost1.png" alt="">
+      <div class="pixel-ghost"></div>
     </div>
     <div class="cat-text" style="flex-shrink:0;font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.8vw,10px);color:#fff;text-align:center;padding:0 8px 10px;line-height:1.4;white-space:nowrap;"></div>
   </div>
   <div id="pixel-seed-container" style="display:none!important;position:absolute;top:0;right:0;bottom:0;left:0;flex-direction:column;align-items:center;background:rgba(78,48,182,0.60);z-index:100;">
     <div class="npc-img-wrap">
-      <img id="npc-seed-img" class="seed" src="assets/Images/npc/seed1.png" alt="">
+      <div class="seed"></div>
     </div>
     <div class="seed-text"></div>
   </div>
@@ -531,9 +548,7 @@ function tPx(){
   // model box gets remaining height after music(120) + buttons(~52) + grid + padding/gaps
   const available = window.innerHeight - MUSIC_H() - GRID_SZ() - 52 - 8*2 - 6*4;
   const fromH = Math.floor((available - 3*(SZ-1)) / SZ);
-  const markerW = Math.min(52, Math.max(40, bW() * 0.08)); // mirrors CSS clamp
-  const gridZone = bW() - markerW * 2 - 24 - 12; // padding + gaps
-  const fromW = Math.floor((gridZone - 3*(SZ-1)) / SZ);
+  const fromW = Math.floor((bW() * 0.55 - 3*(SZ-1)) / SZ);
   return Math.max(18, Math.min(fromH, fromW));
 }
 
@@ -753,7 +768,6 @@ function showSeed(msg){
   targetGrid.style.display='none';
   setMarkersVisible(false);
   catShown=true;
-  startNpcAnim('seed', 3);
   playCatSound();
   setTimeout(()=>{ if(catShown) hideSeed(); },6000);
 }
@@ -765,7 +779,6 @@ function hideSeed(){
   targetGrid.style.display='grid';
   setMarkersVisible(true);
   catShown=false;
-  stopNpcAnim('seed');
 }
 
 function showGhost(){
@@ -776,7 +789,6 @@ function showGhost(){
   targetGrid.style.display='none';
   setMarkersVisible(false);
   catShown=true;
-  startNpcAnim('ghost', 3);
   playCatSound();
   setTimeout(()=>{ if(catShown) hideGhost(); },6000);
 }
@@ -788,33 +800,6 @@ function hideGhost(){
   targetGrid.style.display='grid';
   setMarkersVisible(true);
   catShown=false;
-  stopNpcAnim('ghost');
-}
-
-// ── NPC JS ANIMATION (swap <img> src, works on all mobile browsers) ──
-const NPC_FRAMES = {
-  ghost: ['assets/Images/npc/ghost1.png','assets/Images/npc/ghost2.png','assets/Images/npc/ghost3.png'],
-  seed:  ['assets/Images/npc/seed1.png', 'assets/Images/npc/seed2.png', 'assets/Images/npc/seed3.png'],
-};
-const _npcTimers = {};
-const _npcIdxs   = {};
-
-function startNpcAnim(name, fps){
-  stopNpcAnim(name);
-  const frames = NPC_FRAMES[name];
-  const img = document.getElementById('npc-'+name+'-img');
-  if(!img) return;
-  _npcIdxs[name] = 0;
-  _npcTimers[name] = setInterval(()=>{
-    _npcIdxs[name] = (_npcIdxs[name] + 1) % frames.length;
-    img.src = frames[_npcIdxs[name]];
-  }, Math.round(1000 / (fps||3)));
-}
-
-function stopNpcAnim(name){
-  if(_npcTimers[name]){ clearInterval(_npcTimers[name]); delete _npcTimers[name]; }
-  const img = document.getElementById('npc-'+name+'-img');
-  if(img) img.src = NPC_FRAMES[name][0];
 }
 
 function shuffle(s){
@@ -921,7 +906,7 @@ function showWin(){
 function next(){
   document.getElementById('win').classList.remove('on');
   // Mostrar las cajas del juego de nuevo
-  ['box-music','box-model','box-buttons','box-grid'].forEach(id=>document.getElementById(id).style.display='flex');
+  ['box-music','box-model','box-buttons','box-grid'].forEach(id=>document.getElementById(id).style.display='');
   if(lvlIdx<7){lvlIdx++;init(lvlIdx);}
   else{init(0);lvlIdx=0;} // infinite mode: loop back
   playStartChime();
@@ -929,7 +914,7 @@ function next(){
 function reset(){
   document.getElementById('win').classList.remove('on');
   // Mostrar las cajas del juego de nuevo
-  ['box-music','box-model','box-buttons','box-grid'].forEach(id=>document.getElementById(id).style.display='flex');
+  ['box-music','box-model','box-buttons','box-grid'].forEach(id=>document.getElementById(id).style.display='');
   // Generar nuevo modelo aleatorio y resetear
   generateNewTarget();
   moves=0;
@@ -970,10 +955,10 @@ let firstClose=true;
 function closeInfo(){
   playBtn();
   document.getElementById('info-overlay').style.display='none';
-  document.getElementById('box-music').style.display='flex';
-  document.getElementById('box-model').style.display='flex';
+  document.getElementById('box-music').style.display='';
+  document.getElementById('box-model').style.display='';
   document.getElementById('box-buttons').style.display='flex';
-  document.getElementById('box-grid').style.display='flex';
+  document.getElementById('box-grid').style.display='';
   if(firstClose){ firstClose=false; showSeed(); }
 }
 // ── AUDIO ──
@@ -1144,12 +1129,18 @@ modelElement.addEventListener('click', function(){
 
 init(0);
 updateUI();
-// Mostramos el info-overlay tras el primer frame pintado para evitar cajas vacías
-requestAnimationFrame(() => requestAnimationFrame(() => {
-  resize();
+setTimeout(()=>{
+  updateUI();
+  document.getElementById('info-overlay').scrollTop = 0;
+}, 200);
+setTimeout(()=>{
+  document.getElementById('box-music').style.display='none';
+  document.getElementById('box-model').style.display='none';
+  document.getElementById('box-buttons').style.display='none';
+  document.getElementById('box-grid').style.display='none';
   document.getElementById('info-overlay').style.display='flex';
   document.getElementById('info-overlay').scrollTop=0;
-}));
+}, 300);
 
 </script>
 
@@ -1208,25 +1199,20 @@ let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // Solo mostramos la install-screen si el info-overlay sigue activo (usuario aún no jugó)
-  const infoVisible = document.getElementById('info-overlay').style.display !== 'none';
-  if (infoVisible) {
-    document.getElementById('install-screen').style.display = 'flex';
-    document.getElementById('info-overlay').style.display = 'none';
-  }
+  // FIX: mostrar la pantalla de instalación y ocultar el info-overlay
+  document.getElementById('install-screen').style.display = 'flex';
+  document.getElementById('info-overlay').style.display = 'none';
 });
 
 function enterGame() {
   playBtn();
-  // Entramos al juego SIEMPRE, el prompt PWA es opcional y no bloquea
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt = null;
+  }
   document.getElementById('install-screen').style.display = 'none';
   document.getElementById('info-overlay').style.display = 'flex';
   document.getElementById('info-overlay').scrollTop = 0;
-  if (deferredPrompt) {
-    const p = deferredPrompt;
-    deferredPrompt = null;
-    p.prompt().catch(() => {});
-  }
 }
 </script>
 </body>
