@@ -13,10 +13,7 @@
         if (isLocal) {
           navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.unregister()));
         } else {
-          // Registramos el SW sólo si el archivo existe (evita error 404 en GitHub Pages)
-          fetch('sw.js', {method:'HEAD'}).then(r => {
-            if (r.ok) navigator.serviceWorker.register('sw.js').catch(()=>{});
-          }).catch(()=>{});
+          fetch('sw.js', {method:'HEAD'}).then(r=>{ if(r.ok) navigator.serviceWorker.register('sw.js').catch(()=>{}); }).catch(()=>{});
         }
       }
     </script>
@@ -71,8 +68,7 @@ body{
 /* BOX 3 — tiles */
 #box-grid{width:100%;background:rgba(78,48,182,0.7);}
 #grid{display:grid;gap:3px;grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);}
-
-/* Ocultar cajas del juego por defecto — JS las muestra cuando toca */
+/* Cajas ocultas por defecto para evitar flash antes de la pantalla de entrada */
 #box-music,#box-model,#box-buttons,#box-grid{display:none;}
 .cell{display:flex;align-items:center;justify-content:center;background:#9de5f3;border:2px dashed #8661a9;}
 .tile{width:100%;height:100%;background:#9de5f3;border:2px solid #8661a9;cursor:pointer;box-shadow:4px 4px 12px rgba(157,229,243,0.9);}
@@ -770,6 +766,7 @@ function hideSeed(){
   setMarkersVisible(true);
   catShown=false;
   stopNpcAnim('seed');
+}
 
 function showGhost(){
   const ghostContainer=document.getElementById('ghost-container');
@@ -1147,13 +1144,12 @@ modelElement.addEventListener('click', function(){
 
 init(0);
 updateUI();
-// Mostramos el info-overlay una vez el layout esté calculado
-function showInitialScreen() {
+// Mostramos el info-overlay tras el primer frame pintado para evitar cajas vacías
+requestAnimationFrame(() => requestAnimationFrame(() => {
   resize();
   document.getElementById('info-overlay').style.display='flex';
   document.getElementById('info-overlay').scrollTop=0;
-}
-requestAnimationFrame(() => requestAnimationFrame(showInitialScreen));
+}));
 
 </script>
 
@@ -1209,12 +1205,10 @@ const fills=['#a8e0e6','#a8e0e6','#a8e0e6','#a8e0e6','#089ad8','#089ad8','#8661a
 
 // ── INSTALL SCREEN ──
 let deferredPrompt = null;
-
-// El evento beforeinstallprompt llega de forma asíncrona (puede tardar segundos).
-// Sólo mostramos la pantalla de instalación si el usuario todavía no ha entrado al juego.
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  // Solo mostramos la install-screen si el info-overlay sigue activo (usuario aún no jugó)
   const infoVisible = document.getElementById('info-overlay').style.display !== 'none';
   if (infoVisible) {
     document.getElementById('install-screen').style.display = 'flex';
@@ -1224,11 +1218,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 function enterGame() {
   playBtn();
-  // Entramos al juego SIEMPRE, independientemente de si hay prompt de instalación
+  // Entramos al juego SIEMPRE, el prompt PWA es opcional y no bloquea
   document.getElementById('install-screen').style.display = 'none';
   document.getElementById('info-overlay').style.display = 'flex';
   document.getElementById('info-overlay').scrollTop = 0;
-  // Disparamos la instalación PWA si está disponible (no bloquea el juego)
   if (deferredPrompt) {
     const p = deferredPrompt;
     deferredPrompt = null;
